@@ -1,7 +1,5 @@
 #include "preprocessing.hpp"
-#include "block.hpp"
-#include "zonemap/Zone.hpp"
-#include "vector"
+
 
 // Group into 8s if x.size() % 8 != 0
 void binary_write(std::ofstream &fout, std::vector<bool> &x)
@@ -220,45 +218,46 @@ void preprocess_csv()
 /*
 This function creates a zone map for the year column and saves the zone map to disk
 */
-void createZonemap(int block_size)
-{
-    std::ifstream yearDataStream ("data/column_store/" + FileNameConstants::year, std::ios::binary);
-    int num_records_per_block= block_size / ColumnSizeConstants::year;
-    std::cout << "Num Records per block: " << num_records_per_block <<'\n';
-    Block<ColumnTypeConstants::year> year_read_block = Block<ColumnTypeConstants::year>(block_size);
-    std::ofstream zoneOutStream ("data/zone_maps/year_zones.dat", std::ios::out | std::ios::binary);
-    Block<Zone<ColumnTypeConstants::year>> write_block = Block<Zone<ColumnTypeConstants::year>>(block_size);
+// template <typename T>
+// void createZonemap(int block_size, std::string filename)
+// {
+//     std::ifstream yearDataStream ("data/column_store/" + filename, std::ios::binary);
+//     int num_records_per_block= block_size / sizeof(T);
+//     std::cout << "Num Records per block: " << num_records_per_block <<'\n';
+//     Block<T> year_read_block = Block<T>(block_size);
+//     std::ofstream zoneOutStream ("data/zone_maps/zones_" + filename, std::ios::out | std::ios::binary);
+//     Block<Zone<T>> write_block = Block<Zone<T>>(block_size);
 
-    int block_index = 0;
-    int blk_ptr = 0;
+//     int block_index = 0;
+//     int blk_ptr = 0;
 
-    for (int pos = 0; pos < ProgramConstants::num_rows; pos += num_records_per_block)
-    {
-        year_read_block.read_data(yearDataStream, pos, false);
-        //Since the dates are sorted, we can just check the first and last element of the block
-        //to determine the range of the block
-        ColumnTypeConstants::year year1 = year_read_block.block_data.front();
-        ColumnTypeConstants::year year2 = year_read_block.block_data.back();
-        Zone<ColumnTypeConstants::year> zone = Zone(block_index, year1, year2);
-        write_block.push_data(zone, blk_ptr);
-        blk_ptr ++;
-        if (write_block.is_full(blk_ptr))
-        {
-            write_block.write_data(zoneOutStream, blk_ptr);
-            blk_ptr = 0;
-            write_block.clear();
-        }
+//     for (int pos = 0; pos < ProgramConstants::num_rows; pos += num_records_per_block)
+//     {
+//         year_read_block.read_data(yearDataStream, pos, false);
+//         //Since the dates are sorted, we can just check the first and last element of the block
+//         //to determine the range of the block
+//         T year1 = year_read_block.block_data.front();
+//         T year2 = year_read_block.block_data.back();
+//         Zone<T> zone = Zone(block_index, year1, year2);
+//         write_block.push_data(zone, blk_ptr);
+//         blk_ptr ++;
+//         if (write_block.is_full(blk_ptr))
+//         {
+//             write_block.write_data(zoneOutStream, blk_ptr);
+//             blk_ptr = 0;
+//             write_block.clear();
+//         }
 
-        block_index++;
+//         block_index++;
         
-    }
-    if (blk_ptr != 0)
-    {
-        write_block.write_data(zoneOutStream, blk_ptr);
-    }
-    yearDataStream.close();
-    zoneOutStream.close();
-}
+//     }
+//     if (blk_ptr != 0)
+//     {
+//         write_block.write_data(zoneOutStream, blk_ptr);
+//     }
+//     yearDataStream.close();
+//     zoneOutStream.close();
+// }
 
 /*
 This function reads the zone map from disk and prints it to the console

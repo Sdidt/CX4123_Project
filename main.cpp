@@ -105,7 +105,7 @@ int main(int argc, char **argv)
         Query query = parse_query(matriculation_number);
         std::cout << "Query: " << query.year1 << " " << query.year2 << " " << query.city << std::endl;
         preprocess_csv();
-        createZonemap(block_size);
+        createZonemap<ColumnTypeConstants::year>(block_size, FileNameConstants::year);
         std::cout<<"Finished preprocessing"<<std::endl;
 
         QueryProcessor query_processor(block_size);
